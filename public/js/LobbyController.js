@@ -29,9 +29,9 @@ LobbyController.prototype.init = function () {
             });
         });
     });
-    this.gameService.on('lobby.join', function (data) {
+    this.gameService.on('lobby.join', function (initialLobbyData) {
         _this.$scope.$apply(function () {
-            data.players.forEach(function (player) {
+            initialLobbyData.players.forEach(function (player) {
                 _this.players[player.id] = player;
             });
         });
@@ -43,8 +43,8 @@ LobbyController.prototype.init = function () {
                     author: 'system',
                     text: '<le joueur ' + _this.players[playerId].name + ' est parti>'
                 });
+                delete _this.players[playerId];
             }
-            delete _this.players[playerId];
         });
     });
 };

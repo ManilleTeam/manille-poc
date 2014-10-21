@@ -10,7 +10,7 @@ GameService.prototype = Object.create(EventEmitter.prototype);
 
 GameService.prototype.STATE_NONE = 0;
 GameService.prototype.STATE_LOBBY = 1;
-GameService.prototype.STATE_GAME = 1;
+GameService.prototype.STATE_GAME = 2;
 
 GameService.prototype.init = function () {
     var _this = this;
