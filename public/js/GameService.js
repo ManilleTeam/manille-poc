@@ -46,14 +46,14 @@ GameService.prototype.init = function () {
 };
 
 GameService.prototype.sendChatMessage = function (text) {
-    this.gameChannel.send({
+    this.gameChannel.emit('message', {
         name: 'chat.message',
         value: text
     });
 };
 
 GameService.prototype.join = function (name) {
-    this.gameChannel.send({
+    this.gameChannel.emit('message', {
         name: 'game.join',
         value: {
             name: name

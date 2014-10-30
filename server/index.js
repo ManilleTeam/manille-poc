@@ -35,7 +35,7 @@ injector.factory('gameChannel', function (io, players, idgen) {
 
         var handlers = {
             'chat.message': function (data) {
-                gameChannel.send({
+                gameChannel.emit('message', {
                     name: 'chat.message',
                     value: {
                         author: socket.data.player.name,
@@ -46,11 +46,11 @@ injector.factory('gameChannel', function (io, players, idgen) {
             'game.join': function (data) {
                 socket.data.player.name = data.name;
                 players.push(socket.data.player);
-                gameChannel.send({
+                gameChannel.emit('message', {
                     name: 'player.new',
                     value: socket.data.player
                 });
-                socket.send({
+                socket.emit('message', {
                     name: 'lobby.join',
                     value: {
                         players: players
@@ -77,7 +77,7 @@ injector.factory('gameChannel', function (io, players, idgen) {
                     break;
                 }
             }
-            gameChannel.send({
+            gameChannel.emit('message', {
                 name: 'player.quit',
                 value: socket.data.player.id
             });
