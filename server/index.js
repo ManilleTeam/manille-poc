@@ -3,6 +3,7 @@ var express = require('express');
 var socketio = require('socket.io');
 var AsyncInjector = require('async-injector');
 var Promise = require('bluebird');
+var morgan = require('morgan');
 
 var injector = new AsyncInjector();
 
@@ -17,18 +18,34 @@ injector.factory('idgen', function () {
 
 injector.factory('app', function () {
     var app = express();
+    app.use(morgan());
     app.use(express.static(__dirname + '/../public'));
     return app;
 });
 
 injector.value('players', []);
 
-injector.factory('gameChannel', function (io, players, idgen) {
-    var gameChannel = io.of('/game');
-    gameChannel.on('connection', function (socket) {
-        console.log('game connexion');
+injector.value('loggerFactory', function (topic) {
+    return function (str) {
+        console.log('[' + new Date().toUTCString() + '] ' + topic + ' "' + str + '"');
+    };
+});
 
+injector.factory('gameLogger', function (loggerFactory) {
+    return loggerFactory('game');
+});
+
+injector.factory('gameChannel', function (io, players, idgen, gameLogger) {
+    var gameChannel = io.of('/game');
+
+    gameChannel.use(function (socket, cb) {
         socket.data = {};
+        cb();
+    });
+
+    gameChannel.on('connection', function (socket) {
+        gameLogger('game connexion');
+
         socket.data.player = {
             id: idgen()
         };
@@ -60,17 +77,17 @@ injector.factory('gameChannel', function (io, players, idgen) {
         };
 
         socket.on('message', function (data) {
-            console.log('game handler ' + data.name);
+            gameLogger('game handler ' + data.name);
             var handler = handlers[data.name];
             if (handler) {
                 handlers[data.name](data.value);
             } else {
-                console.log('game missing handler ' + data.name);
+                gameLogger('game missing handler ' + data.name);
             }
         });
 
         socket.on('disconnect', function () {
-            console.log('game disconnect');
+            gameLogger('game disconnect');
             for (var i = 0; i < players.length; i++) {
                 if (players[i].id === socket.data.player.id) {
                     players.splice(i, 1);
